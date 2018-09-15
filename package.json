@@ -35,6 +35,7 @@
     "build": "gatsby build",
     "develop": "gatsby develop",
     "format": "prettier --write '**/*.js'",
+    "deploy": "gatsby build --prefix-paths && gh-pages -d public",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -46,6 +47,7 @@
     "eslint-plugin-jsx-a11y": "^6.1.1",
     "eslint-plugin-react": "^7.11.1",
     "gatsby-plugin-eslint": "^2.0.1",
+    "gh-pages": "^1.2.0",
     "prettier": "^1.14.2"
   }
 }

@@ -2,6 +2,7 @@ module.exports = {
   siteMetadata: {
     title: 'gol',
   },
+  pathPrefix: '/gol-gatsby',
   plugins: [
     'gatsby-plugin-react-helmet',
     'gatsby-plugin-eslint',
