@@ -10,6 +10,7 @@ const styles = {
     html: {
       height: '100%',
       fontSize: '14px',
+      minHeight: '100vh',
     },
     body: {
       background: 'white',

@@ -1,5 +1,26 @@
-/* eslint-disable */
 import color from '../util/colors';
+
+const getCursorPos = (e) => {
+  const x = e.clientX;
+  const y = e.clientY;
+  return [x, y];
+};
+
+const copyCanvas = (original) => {
+  const copy = original.cloneNode();
+  copy.getContext('2d').drawImage(original, 0, 0);
+  return copy;
+};
+
+const drawCircle = (context, x, y, radius) => {
+  context.save();
+  context.beginPath();
+  context.arc(x, y, radius, 0, Math.PI * 2, false);
+  context.fillStyle = color.EMPTY_CELL;
+  context.fill();
+  context.closePath();
+  context.restore();
+};
 
 class Canvas {
   constructor(canvas, width, height, squareSize, ratio) {
@@ -11,7 +32,6 @@ class Canvas {
     this.ratio = ratio;
     this.canvas.width = ((width + 1) * squareSize) * ratio;
     this.canvas.height = ((height + 1) * squareSize) * ratio;
-    console.log(`${this.canvas.width}, ${this.ratio}`)
     const r = this.canvas.height / this.canvas.width;
     this.canvas.style.width = '100%';
     this.canvas.style.height = `${canvas.offsetWidth * r}px`;
@@ -21,16 +41,21 @@ class Canvas {
 
   init() {
     this.drawGrid(this.width, this.height);
-    const bufferCanvas = this.copyCanvas(this.canvas);
-    const ctx = bufferCanvas.getContext('2d');         
-    this.originalCellImage = ctx.getImageData(this.squareSize * this.ratio / 2, this.squareSize * this.ratio / 2, this.squareSize * this.ratio, this.squareSize * this.ratio);
+    const bufferCanvas = copyCanvas(this.canvas);
+    const ctx = bufferCanvas.getContext('2d');
+    this.originalCellImage = ctx.getImageData(
+      this.squareSize * this.ratio / 2,
+      this.squareSize * this.ratio / 2,
+      this.squareSize * this.ratio,
+      this.squareSize * this.ratio,
+    );
   }
 
   handleWindowSizeChange() {
     const r = this.canvas.height / this.canvas.width;
-    this.canvas.style.width = "100%";
-    this.canvas.style.height = this.canvas.offsetWidth * r + "px";
-  };
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = `${this.canvas.offsetWidth * r}px`;
+  }
 
   getClickCoordinates(e) {
     const rect = this.canvas.getBoundingClientRect();
@@ -44,12 +69,14 @@ class Canvas {
     const boardHeight = (this.height + 1) * currentSquareSize;
     const x = Math.round((getCursorPos(e)[0] - cnvLeft) / (cnvRight - cnvLeft) * boardWidth);
     const y = Math.round((getCursorPos(e)[1] - cnvTop) / (cnvBottom - cnvTop) * boardHeight);
-    if ((x + currentSquareSize / 2) % currentSquareSize !== 0 && (y + currentSquareSize / 2) % currentSquareSize !== 0){
+    if ((x + currentSquareSize / 2) % currentSquareSize !== 0
+      && (y + currentSquareSize / 2) % currentSquareSize !== 0) {
       const nearestX = Math.floor((x + currentSquareSize / 2) / currentSquareSize);
       const nearestY = Math.floor((y + currentSquareSize / 2) / currentSquareSize);
-      if(Math.pow(x - nearestX * currentSquareSize, 2) + Math.pow(y - nearestY * currentSquareSize, 2) < Math.pow(r, 2)){
+      if (((x - nearestX * currentSquareSize) ** 2) + ((y - nearestY * currentSquareSize) ** 2)
+        < r ** 2) {
         return {
-          X: nearestX - 1, 
+          X: nearestX - 1,
           Y: nearestY - 1,
         };
       }
@@ -57,11 +84,15 @@ class Canvas {
     return null;
   }
 
-  drawDeadCell(X, Y){
-    this.context.putImageData(this.originalCellImage, (X - this.radius) * this.ratio, (Y - this.radius) * this.ratio);
+  drawDeadCell(X, Y) {
+    this.context.putImageData(
+      this.originalCellImage,
+      (X - this.radius) * this.ratio,
+      (Y - this.radius) * this.ratio,
+    );
   }
 
-  drawLiveCell(X, Y){
+  drawLiveCell(X, Y) {
     this.context.beginPath();
     this.context.arc(X, Y, this.radius - 1, 0, Math.PI * 2, false);
     this.context.fillStyle = color.LIVE_CELL;
@@ -69,54 +100,32 @@ class Canvas {
     this.context.closePath();
   }
 
-  drawGrid(width, height){
+  drawGrid(width, height) {
     const r = this.radius - 1;
     this.context.strokeStyle = color.GRID;
     const w = (width + 1) * this.squareSize;
     const h = (height + 1) * this.squareSize;
-    this.context.lineWidth = .2;
+    this.context.lineWidth = 0.2;
     for (let i = this.squareSize; i < h; i += this.squareSize) {
       this.context.beginPath();
-      this.context.moveTo(0,i);
-      this.context.lineTo(w,i);
+      this.context.moveTo(0, i);
+      this.context.lineTo(w, i);
       this.context.closePath();
-      this.context.stroke();        
+      this.context.stroke();
     }
     for (let i = this.squareSize; i < w; i += this.squareSize) {
       this.context.beginPath();
-      this.context.moveTo(i,0);
-      this.context.lineTo(i,h);
+      this.context.moveTo(i, 0);
+      this.context.lineTo(i, h);
       this.context.closePath();
-      this.context.stroke();        
+      this.context.stroke();
     }
     for (let i = this.squareSize; i < h; i += this.squareSize) {
       for (let j = this.squareSize; j < w; j += this.squareSize) {
-        this.draw_circle(this.context, j, i, r);
+        drawCircle(this.context, j, i, r);
       }
     }
-  } 
-
-  copyCanvas(original) {
-    const copy = original.cloneNode();  
-    copy.getContext('2d').drawImage(original, 0, 0);
-    return copy;
-  }
-
-  draw_circle(context, x, y, radius) {
-    context.save()
-    context.beginPath();
-    context.arc(x, y, radius, 0, Math.PI * 2, false);
-    context.fillStyle = color.EMPTY_CELL;
-    context.fill();
-    context.closePath();
-    context.restore()
   }
 }
 
 export default Canvas;
-
-function getCursorPos(e) {
-  const x = e.clientX;
-  const y = e.clientY;
-  return [x, y];
-}

@@ -69,6 +69,7 @@ const styles = {
   },
   loading: {
     position: 'relative',
+    animation: 'mui-progress-circular-dash 3s ease infinite',
   },
 };
 
@@ -221,20 +222,26 @@ class Main extends Component {
 
   updateOnce() {
     const { incrementGeneration } = this.props;
-    this.game.update();
+    const cellCount = this.game.update();
     incrementGeneration();
+    return cellCount;
   }
 
   run() {
     this.now = Date.now();
     this.delta = this.now - this.then;
+    let cellCount;
     if (this.delta > this.interval) {
       this.then = this.now - (this.delta % this.interval);
-      this.updateOnce();
+      cellCount = this.updateOnce();
     }
-    this.rAF = requestAnimationFrame(() => {
-      this.run();
-    });
+    if (cellCount === 0) {
+      this.stop();
+    } else {
+      this.rAF = requestAnimationFrame(() => {
+        this.run();
+      });
+    }
   }
 
   render() {
@@ -283,11 +290,6 @@ class Main extends Component {
                           size={30}
                           thickness={22}
                           className={classes.loading}
-                          classes={{
-                            circleIndeterminate: {
-                              animation: 'mui-progress-circular-dash 3s ease infinite',
-                            },
-                          }}
                         />
                       </div>
                     </div>
@@ -348,7 +350,7 @@ Main.propTypes = {
     main: PropTypes.bool,
   }),
   classes: PropTypes.shape({}),
-  cells: PropTypes.func.isRequired,
+  cells: PropTypes.arrayOf(PropTypes.PropTypes.arrayOf(PropTypes.number)),
   data: PropTypes.arrayOf(PropTypes.shape({})),
   changePattern: PropTypes.func.isRequired,
   changeBoardSize: PropTypes.func.isRequired,
@@ -368,4 +370,5 @@ Main.defaultProps = {
   currentPattern: 0,
   currentSize: 1,
   data: [],
+  cells: null,
 };

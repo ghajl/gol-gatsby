@@ -35,5 +35,6 @@
     "no-param-reassign": [2, { "props": false }],
     "react/jsx-no-bind": "error",
     "react/jsx-one-expression-per-line": 0,
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }]
   }
 }

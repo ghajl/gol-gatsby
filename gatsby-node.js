@@ -34,7 +34,6 @@ exports.sourceNodes = async function sourceNodes({ actions }) {
 exports.onCreateNode = ({ node }) => {
   if (node.frontmatter) {
     const sections = { ...node.frontmatter.page };
-    console.log(Object.keys(sections))
     Object.keys(sections).forEach((section) => {
       const content = remark()
         .use(remarkHTML)

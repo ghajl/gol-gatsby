@@ -1,9 +1,6 @@
-/* eslint-disable */
-import Cell from './Cell';
 import Life from './Life';
 import Canvas from './Canvas';
-import color from '../util/colors';
-import {makeUnique, shiftPatternToCenter, getRandomPattern} from '../util/helpers';
+import { shiftPatternToCenter, getRandomPattern } from '../util/helpers';
 
 class Game {
   constructor(width, height, squareSize, initialState) {
@@ -22,7 +19,7 @@ class Game {
     this.cellCount = 0;
   }
 
-  reload(width, height, squareSize, canvas){
+  reload(width, height, squareSize, canvas) {
     this.width = width;
     this.height = height;
     this.cellCount = 0;
@@ -33,8 +30,7 @@ class Game {
     this.drawBoard(canvas);
   }
 
-  drawBoard(canvas, ratio)
-  {
+  drawBoard(canvas, ratio) {
     if (ratio != null) {
       this.ratio = ratio;
     }
@@ -45,7 +41,7 @@ class Game {
     return this.cellCount;
   }
 
-  drawCell(e){
+  drawCell(e) {
     const coordinates = this.canvas.getClickCoordinates(e);
     if (coordinates !== null) {
       const redrawList = this.life.drawCell(coordinates.Y, coordinates.X);
@@ -54,9 +50,9 @@ class Game {
     return this.cellCount;
   }
 
-  setPattern(index, patternsList){
+  setPattern(index, patternsList) {
     let pattern;
-    if(patternsList[index].pattern) {
+    if (patternsList[index].pattern) {
       pattern = shiftPatternToCenter(patternsList[index].pattern, this.height, this.width);
     } else {
       pattern = getRandomPattern(this.height, this.width);
@@ -66,15 +62,15 @@ class Game {
     return this.cellCount;
   }
 
-  handleWindowSizeChange(){
+  handleWindowSizeChange() {
     this.canvas.handleWindowSizeChange();
-  };
+  }
 
-  getLiveCells(){
+  getLiveCells() {
     return this.life.getLiveCells();
   }
 
-  getCellCount(){
+  getCellCount() {
     return this.cellCount;
   }
 
@@ -84,24 +80,24 @@ class Game {
     return this.cellCount;
   }
 
-  update(){
+  update() {
     const redrawList = this.life.nextGeneration();
     this.redrawWorld(redrawList);
     return this.cellCount;
   }
 
-  redrawWorld(redrawList){
-    redrawList.forEach(cell => {
+  redrawWorld(redrawList) {
+    redrawList.forEach((cell) => {
       const X = (cell[1] + 1) * this.squareSize;
       const Y = (cell[0] + 1) * this.squareSize;
-      if(this.cellmap[cell[0]][cell[1]].getState() === -1){
-        this.cellCount--;
+      if (this.cellmap[cell[0]][cell[1]].getState() === -1) {
+        this.cellCount -= 1;
         this.canvas.drawDeadCell(X, Y);
       } else {
-        this.cellCount++;
+        this.cellCount += 1;
         this.canvas.drawLiveCell(X, Y);
-      }            
-    })  
+      }
+    });
   }
 }
 

@@ -1,7 +1,5 @@
-/* eslint-disable */
 export default class Cell {
-  constructor()
-  {  
+  constructor() {
     this.state = -1;
     this.count = 0;
     this.neighbors = null;
@@ -10,16 +8,16 @@ export default class Cell {
 
   changeState() {
     this.state *= -1;
-    this.neighbors.forEach(neighbor => {
+    this.neighbors.forEach((neighbor) => {
       neighbor.updateNeighborsCount(this.state);
-    })
+    });
   }
-  
+
   updateNeighborsCount(value) {
     this.count += value;
   }
-  
-  getState(){
+
+  getState() {
     return this.state;
   }
 

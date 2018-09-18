@@ -1,7 +1,5 @@
-/* eslint-disable */
 import Game from './Game';
 import UnwrappedLife from './UnwrappedLife';
-import color from '../util/colors';
 
 export default class UnwrappedGame extends Game {
   constructor(width, height, squareSize, initialState, padding) {
@@ -15,10 +13,14 @@ export default class UnwrappedGame extends Game {
   }
 
   redrawWorld(redrawList) {
-    redrawList.forEach(cell => {
+    redrawList.forEach((cell) => {
       let X = cell[1];
       let Y = cell[0];
-      if(X >= this.padding &&  X < this.gridWidth - this.padding && Y >= this.padding &&  Y < this.gridHidth - this.padding){
+      if (X >= this.padding
+        && X < this.gridWidth - this.padding
+        && Y >= this.padding
+        && Y < this.gridHidth - this.padding
+      ) {
         X = (X - this.padding + 1) * this.squareSize;
         Y = (Y - this.padding + 1) * this.squareSize;
         if (this.cellmap[cell[0]][cell[1]].getState() === -1) {
@@ -27,6 +29,6 @@ export default class UnwrappedGame extends Game {
           this.canvas.drawLiveCell(X, Y);
         }
       }
-    })
+    });
   }
 }

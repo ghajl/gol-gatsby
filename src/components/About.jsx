@@ -3,17 +3,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import PlayArrow from '@material-ui/icons/PlayArrow';
-import Pause from '@material-ui/icons/Pause';
 import { StaticQuery, graphql } from 'gatsby';
 import YouTube from './YouTubePlayer';
 import Game from '../game/Game';
 import UnwrappedGame from '../game/UnwrappedGame';
-import ToggleIcon from './ToggleIcon';
 import { shiftPatternToCenter, shiftPattern } from '../util/helpers';
-import color from '../util/colors';
 import samples from '../game/samples';
+import Sample from './Sample';
 
 const styles = {
   mainContent: {
@@ -57,27 +53,6 @@ const styles = {
     display: 'inline-block',
     margin: '16px 0 0 16px',
   },
-  container: {
-    display: 'flex',
-    fontSize: '.7em',
-    textAlign: 'center',
-    fontFamily: 'Open Sans, sans-serif',
-  },
-  item: {
-    alignSelf: 'flex-end',
-  },
-  canvas: {
-    backgroundColor: color.BOARD,
-  },
-  iconbutton: {
-    width: 35,
-    height: 35,
-    color: color.BUTTON,
-  },
-  icon: {
-    width: 25,
-    height: 25,
-  },
 };
 
 const initSamples = (boards, params) => {
@@ -103,10 +78,26 @@ const initSamples = (boards, params) => {
 
 const initCanvases = (canvases, boards, ratio) => {
   Object.keys(boards).forEach((name) => {
-    const canvas = canvases[name];
+    const canvas = canvases[name].current;
     const { board } = boards[name];
     board.drawBoard(canvas, ratio);
   });
+};
+
+const initRefs = (boards) => {
+  const resultObject = {};
+  Object.keys(boards).forEach((name) => {
+    resultObject[name] = React.createRef();
+  });
+  return resultObject;
+};
+
+
+const computeWidth = (width, squareSize, windowWidth, factor) => {
+  const w = ((width + 1) * squareSize * windowWidth / 100 * 0.7) / factor;
+  const sm = windowWidth * 0.6;
+  const resultWidth = w > sm ? sm : w;
+  return Math.floor(resultWidth);
 };
 
 class About extends Component {
@@ -117,23 +108,37 @@ class About extends Component {
       padding: 20,
     };
     this.samples = initSamples(samples, this.boardParameters);
-    this.canvases = {};
+    this.canvases = initRefs(samples);
     this.runningCount = 0;
     this.rAF = null;
     this.speed = 300;
+    this.state = {
+      loading: true,
+    };
   }
 
   componentDidMount() {
     if (window) {
       window.addEventListener('resize', this.handleWindowSizeChange);
-      const { devicePixelRatio } = window;
+      const { devicePixelRatio, innerWidth } = window;
+      let factor;
+      if (innerWidth < 600) {
+        factor = 3;
+      } else if (innerWidth < 960) {
+        factor = 6;
+      } else {
+        factor = 10;
+      }
+      Object.keys(this.samples).forEach((name) => {
+        this.samples[name].canvasWidth = computeWidth(
+          this.samples[name].width, this.boardParameters.squareSize, innerWidth, factor,
+        );
+      });
       this.setState({
-        screen: {
-          ratio: devicePixelRatio || 1,
-        },
+        loading: false,
       }, () => {
-        const { screen } = this.state;
-        initCanvases(this.canvases, this.samples, screen.ratio);
+        const ratio = devicePixelRatio;
+        initCanvases(this.canvases, this.samples, ratio);
       });
     }
   }
@@ -146,19 +151,21 @@ class About extends Component {
   }
 
   propsStatic = (name) => {
-    const { label } = this.samples[name];
+    const { label, canvasWidth } = this.samples[name];
     return {
-      patternName: label,
+      width: canvasWidth,
+      patternLabel: label,
       withButton: false,
     };
   };
 
   propsControlled = (name) => {
     const { running } = this.props;
-    const { label } = this.samples[name];
+    const { label, canvasWidth } = this.samples[name];
     const isRunning = running[name] || false;
     return {
-      patternName: label,
+      width: canvasWidth,
+      patternLabel: label,
       running: isRunning,
       withButton: true,
     };
@@ -169,7 +176,8 @@ class About extends Component {
     const { label } = this.samples[name];
     const isRunning = running[name] || false;
     return {
-      patternName: label,
+      width: '100%',
+      patternLabel: label,
       running: isRunning,
       withButton: true,
     };
@@ -179,7 +187,7 @@ class About extends Component {
     this.samples.gun.board.handleWindowSizeChange(this.samples.gun.canvas);
   }
 
-  handlePlayToggle(name) {
+  handlePlayToggle = (name) => {
     const { running } = this.props;
     if (running[name]) {
       this.stop(name);
@@ -226,51 +234,37 @@ class About extends Component {
     this.rAF = requestAnimationFrame(() => { this.run(); });
   }
 
-  renderBoard(boardName) {
+  renderBoard(patternName) {
     let boardProps;
-    if (boardName === 'gun') {
-      boardProps = this.propsResponsive(boardName);
-    } else if (this.samples[boardName].type === 'static') {
-      boardProps = this.propsStatic(boardName);
+    if (patternName === 'gun') {
+      boardProps = this.propsResponsive(patternName);
+    } else if (this.samples[patternName].type === 'static') {
+      boardProps = this.propsStatic(patternName);
     } else {
-      boardProps = this.propsControlled(boardName);
+      boardProps = this.propsControlled(patternName);
     }
     const {
+      width = null,
       running = false,
-      patternName,
+      patternLabel,
       withButton = false,
     } = boardProps;
     const { classes } = this.props;
-    const buttonStyle = { display: `${withButton ? 'inline' : 'none'}` };
+    const { loading } = this.state;
     return (
-      <div className={classes.sample} key={boardName}>
-        <div className={classes.container} style={{ width: '100%', height: '100%' }}>
-          <div className={classes.item}>
-            <div className={classes.canvas}>
-              <canvas
-                ref={(el) => {
-                  this.canvases[boardName] = el;
-                }}
-              />
-            </div>
-            <div className={classes.button} style={buttonStyle}>
-              <IconButton
-                className={classes.iconbutton}
-                title={running ? 'Pause' : 'Start'}
-                onClick={() => this.handlePlayToggle(boardName)}
-              >
-                <ToggleIcon
-                  on={!running}
-                  onIcon={<PlayArrow className={classes.icon} />}
-                  offIcon={<Pause className={classes.icon} />}
-                />
-              </IconButton>
-            </div>
-            <div>
-              {patternName}
-            </div>
-          </div>
-        </div>
+      <div className={classes.sample} key={patternName}>
+        <Sample
+          loading={loading}
+          boardWidth={this.samples[patternName].width}
+          boardHeight={this.samples[patternName].height}
+          width={width}
+          running={running}
+          canvasRef={this.canvases[patternName]}
+          withButton={withButton}
+          patternLabel={patternLabel}
+          patternName={patternName}
+          handlePlayToggle={this.handlePlayToggle}
+        />
       </div>
     );
   }
@@ -299,6 +293,7 @@ class About extends Component {
             />
             <div className={classes.video}>
               <YouTube
+                title="John H. Conway on the creation of his Game of Life"
                 videoId="R9Plq-D1gEk"
                 showinfo={0}
                 rel={0}
@@ -307,6 +302,7 @@ class About extends Component {
             </div>
             <div className={classes.video}>
               <YouTube
+                title="Fragment from The Meaning of Life"
                 videoId="CgOcEZinQ2I"
                 showinfo={0}
                 rel={0}
