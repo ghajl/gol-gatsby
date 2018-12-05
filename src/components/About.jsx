@@ -244,6 +244,8 @@ class About extends Component {
       this.then = this.now - (this.delta % this.speed);
       Object.keys(running).forEach(name => {
         if (running[name]) {
+          console.log(name);
+          console.log(this.samples);
           this.samples[name].board.update();
         }
       });
