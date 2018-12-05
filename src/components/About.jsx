@@ -57,7 +57,6 @@ const styles = {
 
 const initSamples = (boards, params) => {
   const result = {};
-  console.log(boards);
   Object.keys(boards).forEach(name => {
     const { width, height, unwrapped, coordinates, label, type } = boards[name];
 
@@ -74,13 +73,6 @@ const initSamples = (boards, params) => {
           params.padding
         )
       : new Game(width, height, params.squareSize, cells);
-    console.log(width);
-    console.log(height);
-    console.log(unwrapped);
-    console.log(coordinates);
-    console.log(label);
-    console.log(type);
-    console.log(board);
     result[name] = {
       board,
       label,
@@ -89,6 +81,8 @@ const initSamples = (boards, params) => {
       type,
     };
   });
+  console.log('result');
+  console.log(result);
   return result;
 };
 
