@@ -81,8 +81,7 @@ const initSamples = (boards, params) => {
       type,
     };
   });
-  console.log('result');
-  console.log(result);
+
   return result;
 };
 
@@ -237,7 +236,7 @@ class About extends Component {
     }
   }
 
-  run() {
+  run = () => {
     const { running } = this.props;
     this.now = Date.now();
     this.delta = this.now - this.then;
@@ -252,7 +251,7 @@ class About extends Component {
     this.rAF = requestAnimationFrame(() => {
       this.run();
     });
-  }
+  };
 
   renderBoard(patternName) {
     let boardProps;
