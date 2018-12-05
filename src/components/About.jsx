@@ -57,14 +57,30 @@ const styles = {
 
 const initSamples = (boards, params) => {
   const result = {};
-  Object.keys(boards).forEach((name) => {
-    const {
-      width, height, unwrapped, coordinates, label, type,
-    } = boards[name];
-    const cells = name === 'gun' ? shiftPattern(coordinates, 1, 1) : shiftPatternToCenter(coordinates, height, width);
+  console.log(boards);
+  Object.keys(boards).forEach(name => {
+    const { width, height, unwrapped, coordinates, label, type } = boards[name];
+
+    const cells =
+      name === 'gun'
+        ? shiftPattern(coordinates, 1, 1)
+        : shiftPatternToCenter(coordinates, height, width);
     const board = unwrapped
-      ? new UnwrappedGame(width, height, params.squareSize, cells, params.padding)
+      ? new UnwrappedGame(
+          width,
+          height,
+          params.squareSize,
+          cells,
+          params.padding
+        )
       : new Game(width, height, params.squareSize, cells);
+    console.log(width);
+    console.log(height);
+    console.log(unwrapped);
+    console.log(coordinates);
+    console.log(label);
+    console.log(type);
+    console.log(board);
     result[name] = {
       board,
       label,
@@ -77,24 +93,23 @@ const initSamples = (boards, params) => {
 };
 
 const initCanvases = (canvases, boards, ratio) => {
-  Object.keys(boards).forEach((name) => {
+  Object.keys(boards).forEach(name => {
     const canvas = canvases[name].current;
     const { board } = boards[name];
     board.drawBoard(canvas, ratio);
   });
 };
 
-const initRefs = (boards) => {
+const initRefs = boards => {
   const resultObject = {};
-  Object.keys(boards).forEach((name) => {
+  Object.keys(boards).forEach(name => {
     resultObject[name] = React.createRef();
   });
   return resultObject;
 };
 
-
 const computeWidth = (width, squareSize, windowWidth, factor) => {
-  const w = ((width + 1) * squareSize * windowWidth / 100 * 0.7) / factor;
+  const w = ((((width + 1) * squareSize * windowWidth) / 100) * 0.7) / factor;
   const sm = windowWidth * 0.6;
   const resultWidth = w > sm ? sm : w;
   return Math.floor(resultWidth);
@@ -120,7 +135,7 @@ class About extends Component {
   componentDidMount() {
     if (window) {
       window.addEventListener('resize', this.handleWindowSizeChange);
-      const { devicePixelRatio, innerWidth } = window;
+      const { innerWidth } = window;
       let factor;
       if (innerWidth < 600) {
         factor = 3;
@@ -129,28 +144,35 @@ class About extends Component {
       } else {
         factor = 10;
       }
-      Object.keys(this.samples).forEach((name) => {
+      Object.keys(this.samples).forEach(name => {
         this.samples[name].canvasWidth = computeWidth(
-          this.samples[name].width, this.boardParameters.squareSize, innerWidth, factor,
+          this.samples[name].width,
+          this.boardParameters.squareSize,
+          innerWidth,
+          factor
         );
       });
-      this.setState({
-        loading: false,
-      }, () => {
-        const ratio = devicePixelRatio;
-        initCanvases(this.canvases, this.samples, ratio);
-      });
+      this.setState(
+        {
+          loading: false,
+        },
+        () => {
+          const { devicePixelRatio } = window;
+          initCanvases(this.canvases, this.samples, devicePixelRatio);
+        }
+      );
     }
   }
 
   componentWillUnmount() {
     const { setRunning } = this.props;
-    if (window) window.removeEventListener('resize', this.handleWindowSizeChange);
+    if (window)
+      window.removeEventListener('resize', this.handleWindowSizeChange);
     cancelAnimationFrame(this.rAF);
     setRunning(false, null);
   }
 
-  propsStatic = (name) => {
+  propsStatic = name => {
     const { label, canvasWidth } = this.samples[name];
     return {
       width: canvasWidth,
@@ -159,7 +181,7 @@ class About extends Component {
     };
   };
 
-  propsControlled = (name) => {
+  propsControlled = name => {
     const { running } = this.props;
     const { label, canvasWidth } = this.samples[name];
     const isRunning = running[name] || false;
@@ -171,7 +193,7 @@ class About extends Component {
     };
   };
 
-  propsResponsive = (name) => {
+  propsResponsive = name => {
     const { running } = this.props;
     const { label } = this.samples[name];
     const isRunning = running[name] || false;
@@ -185,16 +207,16 @@ class About extends Component {
 
   handleWindowSizeChange = () => {
     this.samples.gun.board.handleWindowSizeChange(this.samples.gun.canvas);
-  }
+  };
 
-  handlePlayToggle = (name) => {
+  handlePlayToggle = name => {
     const { running } = this.props;
     if (running[name]) {
       this.stop(name);
     } else {
       this.start(name);
     }
-  }
+  };
 
   stop(name) {
     const { running, setRunning } = this.props;
@@ -209,12 +231,14 @@ class About extends Component {
 
   start(name) {
     const { running, setRunning } = this.props;
-    if (running[name] == null || running[name] === false) {
+    if (!running[name]) {
       this.runningCount += 1;
       setRunning(true, name);
       this.then = Date.now();
       if (this.runningCount === 1) {
-        this.rAF = requestAnimationFrame(() => { this.run(); });
+        this.rAF = requestAnimationFrame(() => {
+          this.run();
+        });
       }
     }
   }
@@ -225,13 +249,15 @@ class About extends Component {
     this.delta = this.now - this.then;
     if (this.delta > this.speed) {
       this.then = this.now - (this.delta % this.speed);
-      Object.keys(running).forEach((name) => {
+      Object.keys(running).forEach(name => {
         if (running[name]) {
           this.samples[name].board.update();
         }
       });
     }
-    this.rAF = requestAnimationFrame(() => { this.run(); });
+    this.rAF = requestAnimationFrame(() => {
+      this.run();
+    });
   }
 
   renderBoard(patternName) {
@@ -272,15 +298,13 @@ class About extends Component {
   render() {
     const { classes, data } = this.props;
     const { markdownRemark } = data;
-    const { frontmatter: { page } } = markdownRemark;
+    const {
+      frontmatter: { page },
+    } = markdownRemark;
     const sections = page;
+    const { intro, rules, examples, origins, references, links } = sections;
     const {
-      intro, rules, examples, origins, references, links,
-    } = sections;
-    const {
-      subsections: {
-        still, guns, oscillators, gliders,
-      },
+      subsections: { still, guns, oscillators, gliders },
     } = examples;
     return (
       <div className={classes.mainContent}>
@@ -309,97 +333,63 @@ class About extends Component {
               />
               Fragment from Stephen Hawking`s The Meaning of Life
             </div>
-            <h2 className={classes.title}>
-              {rules.title}
-            </h2>
+            <h2 className={classes.title}>{rules.title}</h2>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: rules.content }}
             />
-            <h2
-              className={classes.title}
-            >
-              {examples.title}
-            </h2>
+            <h2 className={classes.title}>{examples.title}</h2>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: examples.content }}
             />
-            <h4
-              className={classes.title}
-            >
-              {still.title}
-            </h4>
+            <h4 className={classes.title}>{still.title}</h4>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: still.content }}
             />
-            <div
-              className={classes.boardsSection}
-            >
-              {['block', 'boat', 'loaf', 'beehive'].map(name => this.renderBoard(name))}
+            <div className={classes.boardsSection}>
+              {['block', 'boat', 'loaf', 'beehive'].map(name =>
+                this.renderBoard(name)
+              )}
             </div>
-            <h4
-              className={classes.title}
-            >
-              {oscillators.title}
-            </h4>
+            <h4 className={classes.title}>{oscillators.title}</h4>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: oscillators.content }}
             />
-            <div
-              className={classes.boardsSection}
-            >
-              {['blinker', 'beacon', 'toad', 'glasses', 'quad'].map(name => this.renderBoard(name))}
+            <div className={classes.boardsSection}>
+              {['blinker', 'beacon', 'toad', 'glasses', 'quad'].map(name =>
+                this.renderBoard(name)
+              )}
             </div>
-            <h4 className={classes.title}>
-              {gliders.title}
-            </h4>
+            <h4 className={classes.title}>{gliders.title}</h4>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: gliders.content }}
             />
-            <div
-              className={classes.boardsSection}
-            >
+            <div className={classes.boardsSection}>
               {['glider', 'spaceship'].map(name => this.renderBoard(name))}
             </div>
-            <h4 className={classes.title}>
-              {guns.title}
-            </h4>
+            <h4 className={classes.title}>{guns.title}</h4>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: guns.content }}
             />
-            <div
-              className={classes.boardsSection}
-            >
+            <div className={classes.boardsSection}>
               {this.renderBoard('gun')}
             </div>
-            <h2
-              className={classes.title}
-            >
-              {origins.title}
-            </h2>
+            <h2 className={classes.title}>{origins.title}</h2>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: origins.content }}
             />
-            <h2
-              className={classes.title}
-            >
-              {references.title}
-            </h2>
+            <h2 className={classes.title}>{references.title}</h2>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: references.content }}
             />
-            <h2
-              className={classes.title}
-            >
-              {links.title}
-            </h2>
+            <h2 className={classes.title}>{links.title}</h2>
             <div
               className={classes.text}
               dangerouslySetInnerHTML={{ __html: links.content }}
@@ -425,7 +415,7 @@ const withData = WrappedComponent => props => (
       query {
         markdownRemark {
           frontmatter {
-            page{
+            page {
               intro {
                 content
               }

@@ -60,6 +60,7 @@ const styles = {
 class Sample extends PureComponent {
   handleClick = () => {
     const { handlePlayToggle, patternName } = this.props;
+    console.log(patternName)
     handlePlayToggle(patternName);
   }
 

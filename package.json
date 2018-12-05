@@ -6,10 +6,12 @@
     "@material-ui/core": "^3.0.3",
     "@material-ui/icons": "^3.0.1",
     "axios": "^0.18.0",
+    "babel-polyfill": "^6.26.0",
     "core-js": "^2.5.7",
     "gatsby": "^2.0.0-rc.15",
     "gatsby-plugin-manifest": "^2.0.2-rc.1",
     "gatsby-plugin-offline": "^2.0.0-rc.6",
+    "gatsby-plugin-polyfill-io": "^1.0.5",
     "gatsby-plugin-react-helmet": "^3.0.0-rc.1",
     "gatsby-source-filesystem": "^2.0.1-rc.6",
     "gatsby-transformer-remark": "^1.7.44",
@@ -27,15 +29,16 @@
     "remark": "^9.0.0",
     "remark-html": "^8.0.0"
   },
-  "keywords": [
-    "gatsby"
-  ],
+  "keywords": ["gatsby"],
+  "browserslist": ["> 1%", "last 2 versions"],
   "license": "MIT",
   "scripts": {
-    "build": "gatsby build",
+    "build": "npm run clean && gatsby build",
     "develop": "gatsby develop",
+    "clean": "rimraf .cache public",
     "format": "prettier --write '**/*.js'",
-    "deploy": "gatsby build --prefix-paths && gh-pages -d public",
+    "deploy": "npm run clean && gatsby build --prefix-paths && gh-pages -d public",
+    "gh": "gh-pages -d public",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

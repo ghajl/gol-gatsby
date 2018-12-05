@@ -11,7 +11,7 @@ const running = (
   case actionTypes.SET_RUNNING:
     if (action.name) {
       if (action.running) {
-        return { ...state, ...{ [action.name]: action.running } };
+        return { ...state, ...{ [action.name]: true } };
       }
       const newState = { ...state };
       delete newState[action.name];

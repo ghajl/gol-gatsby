@@ -1,4 +1,5 @@
 /* eslint-disable */
+import 'babel-polyfill';
 import React from 'react';
 import { Provider } from 'react-redux';
 import createStore from './src/store';

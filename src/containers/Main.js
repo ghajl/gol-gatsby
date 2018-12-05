@@ -1,14 +1,20 @@
 import { connect } from 'react-redux';
 import {
-  changePattern, changeBoardSize, incrementGeneration, setRunning, setSpeed, setClear, saveCells,
+  changePattern,
+  changeBoardSize,
+  incrementGeneration,
+  setRunning,
+  setSpeed,
+  setClear,
+  saveCells,
 } from '../actions';
 import Main from '../components/Main';
 
 const mapDispatchToProps = dispatch => ({
-  changePattern: (index) => {
+  changePattern: index => {
     dispatch(changePattern(index));
   },
-  changeBoardSize: (size) => {
+  changeBoardSize: size => {
     dispatch(changeBoardSize(size));
   },
   incrementGeneration: () => {
@@ -17,20 +23,24 @@ const mapDispatchToProps = dispatch => ({
   setRunning: (running, name) => {
     dispatch(setRunning(running, name));
   },
-  setSpeed: (fps) => {
+  setSpeed: fps => {
     dispatch(setSpeed(fps));
   },
   setClear: () => {
     dispatch(setClear());
   },
-  saveCells: (cells) => {
+  saveCells: cells => {
     dispatch(saveCells(cells));
   },
 });
 
-const mapStateToProps = ({
-  running, currentSize, cells, currentPattern,
-}) => ({
-  running, currentSize, cells, currentPattern,
+const mapStateToProps = ({ running, currentSize, cells, currentPattern }) => ({
+  running,
+  currentSize,
+  cells,
+  currentPattern,
 });
-export default connect(mapStateToProps, mapDispatchToProps)(Main);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Main);
